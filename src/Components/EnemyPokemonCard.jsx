@@ -5,8 +5,23 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import axios from 'axios'
 
-export default function PokemonCard(props) {
+const fightHandle = (props) => {
+  const pokemon = props
+  console.log(pokemon)
+  const promise =  axios.post('http://localhost:8080/enemy/fight', pokemon)
+  .then((res) => alert(`Fighting: ${res.data.name}`))
+  .catch(error => console.error("Error in fight:", error)) 
+}
+
+const captureHandle = (props) => {
+  const pokemon = props
+  const promise =  axios.post('http://localhost:8080/enemy/capture', pokemon)
+  .then((res) => alert(`Capturing: ${res.data.name}`))
+  .catch(error => console.error("Error in capture:", error)) 
+}
+export default function EnemyPokemonCard(props) {
   return (
     <Card sx={{ outline:3, outlineColor:'#AD8E37', paddingTop:1, width:180, bgcolor:'#242424', marginTop:'5%' }}>
         <Typography sx={{ color: 'ghostwhite', textTransform:'capitalize' }} gutterBottom variant="h5" component="div">
@@ -29,8 +44,8 @@ export default function PokemonCard(props) {
         </Typography>
       </CardContent>
       <CardActions sx={{display:'flex',justifyContent:'space-around', p:2 }}>
-        <Button variant='solid'sx={{bgcolor:'gold'}} size="medium"><strong>Fight</strong></Button>
-        <Button variant='soft'sx={{ bgcolor:'lightblue'}} size="medium"><strong>Capture</strong></Button>
+        <Button variant='solid'sx={{bgcolor:'gold'}} size="medium" onClick={() => fightHandle(props)}><strong>Fight</strong></Button>
+        <Button variant='soft'sx={{ bgcolor:'lightblue'}} size="medium" onClick={() => captureHandle(props)}><strong>Capture</strong></Button>
       </CardActions>
     </Card>
   );

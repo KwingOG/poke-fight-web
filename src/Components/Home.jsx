@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import axios from 'axios'
-import PokemonCard from './PokemonCard.jsx'
+import EnemyPokemonCard from './EnemyPokemonCard.jsx'
+import TeamPokemonCard from './TeamPokemonCard.jsx'
 import StartButton from '@mui/material/Button';
 import ExploreIcon from '@mui/icons-material/Explore';
 import Box from '@mui/material/Box';
@@ -11,47 +12,73 @@ import './../App.css'
 
 export default function Home() {
 
-    const [enemiesInfo, setEnemiesInfo] = useState([])
+  const [selectedPokemon, setSelectedPokemon] = useState(null);
+  const [enemiesInfo, setEnemiesInfo] = useState([])
+  const [teamInfo, setTeamInfo] = useState([])
 
-    const startGame = () => {
-        let startPromise = 
-            axios.get('http://localhost:8080/start')
-                .then((response) => {
-                    setEnemiesInfo(response.data.enemiesInfo)
-                    console.log(enemiesInfo)
-  
-                })
-                .catch((error)=>{
-                    console.log(error)
-                }
+  const startGame = () => {
+      let teamPromise = 
+          axios.get('http://localhost:8080/start/team')
+              .then((response) => {
+                  setTeamInfo(response.data.teamInfo)
+                  console.log(teamInfo)
+
+              })
+              .catch((error)=>{
+                  console.log(error)
+              }
+          )
+      let enemiesPromise = 
+          axios.get('http://localhost:8080/start/enemies')
+              .then((response) => {
+                  setEnemiesInfo(response.data.enemiesInfo)
+                  console.log(enemiesInfo)
+
+              })
+              .catch((error)=>{
+                  console.log(error)
+              }
+          )
+  }
+  if (enemiesInfo.length && teamInfo.length) {
+    return (
+      <>
+        <h1>Now Fight!</h1>
+        <Box sx={{ flexDirection:'column', display:'flex', justifyContent:'center', gap:'5%', alignItems:'center'}}>
+          <h2>Your team</h2>
+          <Box sx={{ display:'flex', justifyContent:'center', gap:'5%'}}>
+          {teamInfo.map( (props, id) => {
+            return (
+              <TeamPokemonCard key={id}
+              {...props}
+              isSelected={selectedPokemon === props.name}
+              setSelectedPokemon={() => setSelectedPokemon(props.name)}/>
             )
-    }
-    if (enemiesInfo.length) {
-
-      return (
-        <>
-          <h1>Now Fight!</h1>
-          <Box sx={{ display:'flex', justifyContent:'center', flexWrap:'wrap', gap:'5%'}}>
-            {enemiesInfo.map( (props, id) => {
-              return (
-                <PokemonCard key={id} {...props}/>
-              )
-          })}
+        })}
           </Box>
-        </>
-      )
-    } else 
-      return (
-            <>
-              <h1>Welcome to PokeFight!</h1>
-              <div className="card">
-              <StartButton onClick={startGame} endIcon={<ExploreIcon />} size="large" color="error" variant='contained'>Start</StartButton>
-              </div>
-              <p className="read-the-docs">
-                Copyright 2024 Kwing productions.
-              </p>
-            </>
-      )
+        </Box>
+        <h2>Enemies</h2>
+        <Box sx={{ display:'flex', justifyContent:'center', flexWrap:'wrap', gap:'5%'}}>
+          {enemiesInfo.map( (props, id) => {
+            return (
+              <EnemyPokemonCard key={id} {...props}/>
+            )
+        })}
+        </Box>
+      </>
+    )
+  } else 
+    return (
+          <>
+            <h1>Welcome to PokeFight!</h1>
+            <div className="card">
+            <StartButton onClick={startGame} endIcon={<ExploreIcon />} size="large" color="error" variant='contained'>Start</StartButton>
+            </div>
+            <p className="read-the-docs">
+              Copyright 2024 Kwing productions.
+            </p>
+          </>
+    )
 
 }
 
