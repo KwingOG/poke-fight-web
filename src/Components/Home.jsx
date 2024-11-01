@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import EnemyPokemonCard from './EnemyPokemonCard.jsx'
 import TeamPokemonCard from './TeamPokemonCard.jsx'
@@ -6,34 +6,49 @@ import StartButton from '@mui/material/Button';
 import ExploreIcon from '@mui/icons-material/Explore';
 import Box from '@mui/material/Box';
 
-
 import './../App.css'
 
 
 export default function Home() {
 
+  const [captureLeft, setCaptureLeft] = useState(2);
   const [selectedPokemon, setSelectedPokemon] = useState(null);
   const [enemiesInfo, setEnemiesInfo] = useState([])
   const [teamInfo, setTeamInfo] = useState([])
 
+  const keepAlive = (ms) => {
+    setInterval(() => {
+      axios.get('https://poke-fight-api.onrender.com/healthcheck')
+        .then((res) => {
+          console.log("Backend Status: ", res.data.message);
+        })
+        .catch(error => {
+          console.error("Error checking backend status:", error);
+        });
+    }, ms);
+  };
+
+  useEffect(() => {
+    const intervalId = keepAlive(60000);
+    return () => clearInterval(intervalId);
+  }, []);
+  
+
   const startGame = () => {
       let teamPromise = 
-          axios.get('http://localhost:8080/start/team')
+          axios.get('https://poke-fight-api.onrender.com/start/team')
               .then((response) => {
                   setTeamInfo(response.data.teamInfo)
-                  console.log(teamInfo)
-
+                  setSelectedPokemon(response.data.teamInfo[0])
               })
               .catch((error)=>{
                   console.log(error)
               }
           )
       let enemiesPromise = 
-          axios.get('http://localhost:8080/start/enemies')
+          axios.get('https://poke-fight-api.onrender.com/start/enemies')
               .then((response) => {
                   setEnemiesInfo(response.data.enemiesInfo)
-                  console.log(enemiesInfo)
-
               })
               .catch((error)=>{
                   console.log(error)
@@ -51,8 +66,8 @@ export default function Home() {
             return (
               <TeamPokemonCard key={id}
               {...props}
-              isSelected={selectedPokemon === props.name}
-              setSelectedPokemon={() => setSelectedPokemon(props.name)}/>
+              isSelected={selectedPokemon === props}
+              setSelectedPokemon={() => setSelectedPokemon(props)}/>
             )
         })}
           </Box>
@@ -61,7 +76,9 @@ export default function Home() {
         <Box sx={{ display:'flex', justifyContent:'center', flexWrap:'wrap', gap:'5%'}}>
           {enemiesInfo.map( (props, id) => {
             return (
-              <EnemyPokemonCard key={id} {...props}/>
+              <EnemyPokemonCard key={id}
+              enemyPokemon={props}
+              teamPokemon={selectedPokemon}/>
             )
         })}
         </Box>
